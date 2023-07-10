@@ -1,0 +1,44 @@
+CXXFLAGS = -O2 -Wall -pedantic-errors -pedantic -std=c++14 `$(WXC) --cflags` `val-config --cflags` 
+LDFLAGS = -s  `$(WXC) --libs` `val-config --libs`
+ICONDIR = "$(PREFIX)/share/icons/LGS" 
+OBJ = obj
+BIN = bin
+
+
+objects = LGSApp LGSMain LGS 
+  
+OBJECTS = $(addprefix $(OBJ)/, $(objects))
+
+
+$(BIN)/LGS: create_dirs $(OBJECTS)
+	${CXX} -o $@ $(OBJECTS) $(LDFLAGS)
+
+
+create_dirs:
+	mkdir -p $(OBJ) $(BIN)
+
+$(OBJ)/%.o: $(DIRPATH)/src/%.cpp $(DIRPATH)/src/%.h
+	${CXX} -c $(CXXFLAGS) $< -o $@
+
+
+.PHONY clean:
+
+clean:
+	rm -r -f $(OBJ) $(BIN)
+	
+
+.PHONY install:
+
+install:
+	mkdir -p $(ICONDIR)
+	mkdir -p $(PREFIX)/bin
+	cp -f $(DIRPATH)/icons/* $(ICONDIR)
+	cp -f $(BIN)/LGS $(PREFIX)/bin/
+
+
+.PHONY uninstall:
+
+uninstall:
+	rm -r $(ICONDIR)
+	rm -f $(PREFIX)/bin/LGS
+

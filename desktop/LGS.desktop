@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=LGS
+Comment=Computing linear system of equations 
+Comment[de]=Berechnung von LGS
+Exec=LGS
+Icon=LGS.png
+Keywords=Math
+Terminal=false
+Type=Application
+Categories=Math;
