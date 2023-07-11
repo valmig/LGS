@@ -34,10 +34,8 @@ done
 ICONPATH="iconpath = \"${prefix}/share/icons/LGS/LGS.xpm\","
 DESKICON="Icon=${prefix}/share/icons/LGS/LGS.png" 
 
-#echo 'changing PlotFuncion.cpp'
-#sed -i "26s#.*#${ICONPATH}#" "${HERE}/src/PlotFunction.cpp"
 
-echo 'changing PlotFuncion.desktop'
+echo 'changing LGS.desktop'
 sed -i "6s#.*#${DESKICON}#" "${HERE}/desktop/LGS.desktop"
 
 
