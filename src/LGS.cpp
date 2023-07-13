@@ -11,7 +11,7 @@ std::string filesep="\\",filedir=val::CurrentHomeDir(),settingsfile=val::Current
             alticonpath = val::GetExeDir() + "\\LGS.xpm";
 #endif // _WIN32
 #ifdef __LINUX__
-std::string filesep="/", valdir = valdir= val::CurrentHomeDir() + "/.config/MVPrograms", settingsdir = valdir + "/LGS",
+std::string filesep="/", valdir = val::CurrentHomeDir() + "/.config/MVPrograms", settingsdir = valdir + "/LGS",
             settingsfile = settingsdir + "/settings.conf",
             iconpath = val::CurrentHomeDir() + "/.local/share/icons/LGS/LGS.xpm",
             alticonpath = "";
