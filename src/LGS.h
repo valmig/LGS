@@ -16,8 +16,8 @@
 #include <val_filesys.h>
 
 extern std::string filesep,settingsfile,settingsdir,valdir,iconpath, alticonpath;
-extern wxTextCtrl *MyOutput;
-extern wxButton *MyButton;
+//extern wxTextCtrl *MyOutput;
+//extern wxButton *MyButton;
 extern wxFrame* MyFrame;
 
 class MyThreadEvent;
@@ -31,7 +31,7 @@ public:
 
 	// You *must* copy here the data to be transported
 	MyThreadEvent(const MyThreadEvent& event)
-        		:  wxThreadEvent(event) { this->SetMessage(event.GetMessage()); }
+        :  wxThreadEvent(event), message(event.message) {} //{ this->SetMessage(event.GetMessage()); }
 
 	// Required for sending with wxPostEvent()
 	wxEvent* Clone() const { return new MyThreadEvent(*this); }

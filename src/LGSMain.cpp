@@ -289,8 +289,8 @@ void LGSFrame::Compute()
 
     O_TextCtrl->Clear();
 
-    MyOutput=O_TextCtrl;
-    MyButton = ComputeButton;
+    //MyOutput=O_TextCtrl;
+    //MyButton = ComputeButton;
     MyFrame = this;
     ComputeButton->Disable();
     numberfield = Choice->GetSelection();
@@ -310,10 +310,11 @@ void LGSFrame::OnClearButtonClick(wxCommandEvent& event)
 void LGSFrame::OnMessageEvent(MyThreadEvent& event)
 {
      Choice->SetSelection(numberfield);
-     MyOutput->WriteText(event.GetMessage());
-     MyOutput->SetInsertionPoint(0);
+     O_TextCtrl->Clear();
+     O_TextCtrl->WriteText(event.GetMessage());
+     O_TextCtrl->SetInsertionPoint(0);
 
-     MyButton->Enable();
+     ComputeButton->Enable();
      iscomputing = 0;
      //wxMessageBox(event.GetMessage());
 }

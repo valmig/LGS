@@ -25,9 +25,9 @@ std::string filesep="/", valdir = val::CurrentHomeDir() + "/Library/Application 
 
 
 
-wxTextCtrl *MyOutput=NULL;
-wxButton *MyButton=NULL;
-wxFrame* MyFrame=NULL;
+//wxTextCtrl *MyOutput=NULL;
+//wxButton *MyButton=NULL;
+wxFrame* MyFrame = nullptr;
 
 
 
@@ -560,7 +560,7 @@ void lgsmain(std::string& s,int &numberfield,int p)
         //r=val::les(Agauss,Xgauss,detgauss);
         //s=ToString(Agauss);
         r=val::les(A,X,det);
-        s=ToString(A);
+        s=::ToString(A);
         if (r==0) s+="\n\nLgs ist unloesbar!";
         else {
             s+="\n r = "+ val::ToString(r);
