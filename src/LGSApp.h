@@ -3,8 +3,7 @@
  * Purpose:   Defines Application Class
  * Author:    Miguel Valbuena ()
  * Created:   2015-12-17
- * Copyright: Miguel Valbuena ()
- * License:
+ * License:   GPL v3.0
  **************************************************************/
 
 #ifndef LGSAPP_H
