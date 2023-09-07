@@ -2,7 +2,7 @@
 #include <sstream>
 #include <pol_arithmetic.h>
 #include <LA.h>
-#include <function_parser.h>
+#include <valfunction.h>
 
 #ifdef _WIN32
 std::string filesep="\\",filedir=val::CurrentHomeDir(),settingsfile=val::CurrentHomeDir()+"\\AppData\\Local\\MVPrograms\\LGS\\settings.txt",
