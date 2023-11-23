@@ -173,9 +173,10 @@ LGSFrame::LGSFrame(wxWindow* parent,wxWindowID id)
     Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnNumberfieldChoice,this,1005);
     Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnNumberfieldChoice,this,1006);
     Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnNumberfieldChoice,this,1007);
+    Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::ComputeSimplex,this,1008);
 
 
-    wxAcceleratorEntry entries[10];
+    wxAcceleratorEntry entries[11];
 
     entries[0].Set(wxACCEL_CTRL, (int) 'L',ID_BUTTON1);
     entries[1].Set(wxACCEL_CTRL, (int) 'D',ID_BUTTON2);
@@ -187,9 +188,10 @@ LGSFrame::LGSFrame(wxWindow* parent,wxWindowID id)
     entries[7].Set(wxACCEL_ALT,(int) 'I',1005);
     entries[8].Set(wxACCEL_ALT,(int) 'G',1006);
     entries[9].Set(wxACCEL_ALT,(int) 'F',1007);
+    entries[10].Set(wxACCEL_CTRL,(int) 'S',1008);
     //entries[2].Set(wxACCEL_CTRL, (int) '+',ID_MENUITEM1);
     //entries[3].Set(wxACCEL_CTRL, (int) '-',ID_MENUITEM2);
-    wxAcceleratorTable accel(10,entries);
+    wxAcceleratorTable accel(11,entries);
     SetAcceleratorTable(accel);
 
 
@@ -277,10 +279,7 @@ void LGSFrame::Compute()
 
     if (!val::isprime(p)) p = val::nextprime(p);
 
-    TextCtrlmodq->Clear();
-    TextCtrlmodq->WriteText(val::ToString(p));
-
-
+    TextCtrlmodq->SetValue(val::ToString(p));
 
     IOText=I_TextCtrl->GetValue();
 
@@ -298,6 +297,18 @@ void LGSFrame::Compute()
     t.detach();
 }
 
+void LGSFrame::ComputeSimplex(wxCommandEvent &)
+{
+    if (iscomputing) return;
+    iscomputing = 1;
+
+    IOText=I_TextCtrl->GetValue();
+    O_TextCtrl->Clear();
+    MyFrame = this;
+    ComputeButton->Disable();
+    std::thread t(simplex,std::ref(IOText));
+    t.detach();
+}
 
 void LGSFrame::OnClearButtonClick(wxCommandEvent& event)
 {
@@ -321,10 +332,6 @@ void LGSFrame::OnMessageEvent(MyThreadEvent& event)
 void LGSFrame::OnChoiceSelect(wxCommandEvent& event)
 {
     Compute();
-    /*
-    if (Choice->GetSelection()==0) val::rational::SetOutput_Style(val::rational::RATIONAL);
-    else  val::rational::SetOutput_Style(val::rational::FLOAT);
-        */
 }
 
 void LGSFrame::OnMenuIncrease(wxCommandEvent& event)

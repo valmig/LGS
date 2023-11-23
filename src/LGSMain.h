@@ -107,6 +107,7 @@ class LGSFrame: public wxFrame
         void OnMessageEvent(MyThreadEvent& event);
         void OnNumberfieldChoice(wxCommandEvent &event);
         void Compute();
+        void ComputeSimplex(wxCommandEvent&);
 
         int xsize=-1,ysize=-1,xpos=-1,ypos=-1,fontsize=-1, iscomputing = 0, numberfield = 0;
         std::string IOText;

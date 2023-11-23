@@ -65,6 +65,8 @@ int has_variable(const std::string &s);
 
 void lgsmain(std::string& s,int &numberfield,int p);
 
+void simplex(std::string& s);
+
 
 template <class T>
 std::string ToString(const val::matrix<T>& A)

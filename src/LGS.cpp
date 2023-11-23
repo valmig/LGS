@@ -337,6 +337,7 @@ void SetLGS(std::string &s,val::matrix<T> &A)
 */
 
 
+
 void lgsmain(std::string& s,int &numberfield,int p)
 {
     val::modq::q=p;
@@ -631,3 +632,81 @@ void lgsmain(std::string& s,int &numberfield,int p)
 }
 
 
+void simplex(std::string &s)
+{
+    using namespace val;
+    matrix<rational> A = val::FromString<matrix<rational>>(s);
+    int m = A.numberofrows(), n = A.numberofcolumns(), i ,j, pi = 0, pj = 0, pfound = 0, nel = 0;
+    rational zero, min, inf(1,0), r;
+
+    MyThreadEvent event(MY_EVENT,IdMessage);
+
+    event.SetMessage("");
+
+    s = "Simplex-Algorithm:\n";
+
+    if (n < m+1) {
+        s += "\n Wrong dimensions!\n";
+        event.SetMessage(s);
+        MyFrame->GetEventHandler()->QueueEvent(event.Clone() );
+        return;
+    }
+
+    --n;
+
+    for (i = 0; i < m; ++i) {
+        if (A(i,n) < zero) {
+            s += "\n Matrix not valid!\n";
+            event.SetMessage(s);
+            MyFrame->GetEventHandler()->QueueEvent(event.Clone() );
+            return;
+        }
+    }
+
+
+    do {
+        pfound = 0;
+        min = zero;
+        // find min element < 0 in last row
+        for (j = 0; j < n; ++j) {
+            if (A(m-1,j) < zero) {
+                pfound = 1;
+                if (A(m-1,j) < min) {
+                    pj = j;
+                    min = A(m-1,j);
+                }
+            }
+        }
+        if (!pfound) break;
+        min = inf;
+        // find pivot in pj column:
+        pfound = 0;
+        for (i = 0; i < m-1; ++i) {
+            if (A(i,pj) <= zero) continue;
+            if ( (r = A(i,n)/A(i,pj)) < min) {
+                min = r;
+                pi = i;
+                pfound = 1;
+            }
+        }
+        if (!pfound) break;
+        // divide pi-th row by A(pi,pj);
+        r = A(pi,pj);
+        for (j = 0; j <= n; ++j) A(pi,j) /= r;
+        // Elimination:
+        for (i = 0; i < m; ++i) {
+            if (i == pi) continue;
+            r = A(i,pj);
+            for (j = 0; j <= n; ++j) {
+                A(i,j) -= r*A(pi,j);
+            }
+        }
+        ++nel;
+        s += "\n Pivot: " + ToString(pi+1) + " , " + ToString(pj+1);
+        s += "\n A after " + ToString(nel) + ". elimination:\n" + ToString(A) +"\n";
+    }
+    while (pfound);
+
+    event.SetMessage(s);
+    MyFrame->GetEventHandler()->QueueEvent(event.Clone() );
+}
