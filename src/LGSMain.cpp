@@ -22,6 +22,11 @@
 #include <wx/string.h>
 //*)
 
+#include "valDialogs.cpp"
+
+
+
+
 //helper functions
 enum wxbuildinfoformat {
     short_f, long_f };
@@ -174,9 +179,10 @@ LGSFrame::LGSFrame(wxWindow* parent,wxWindowID id)
     Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnNumberfieldChoice,this,1006);
     Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnNumberfieldChoice,this,1007);
     Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::ComputeSimplex,this,1008);
+    Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::ComputeEvaluation,this,1009);
 
 
-    wxAcceleratorEntry entries[11];
+    wxAcceleratorEntry entries[12];
 
     entries[0].Set(wxACCEL_CTRL, (int) 'L',ID_BUTTON1);
     entries[1].Set(wxACCEL_CTRL, (int) 'D',ID_BUTTON2);
@@ -189,9 +195,10 @@ LGSFrame::LGSFrame(wxWindow* parent,wxWindowID id)
     entries[8].Set(wxACCEL_ALT,(int) 'G',1006);
     entries[9].Set(wxACCEL_ALT,(int) 'F',1007);
     entries[10].Set(wxACCEL_CTRL,(int) 'S',1008);
+    entries[11].Set(wxACCEL_CTRL,(int) 'E',1009);
     //entries[2].Set(wxACCEL_CTRL, (int) '+',ID_MENUITEM1);
     //entries[3].Set(wxACCEL_CTRL, (int) '-',ID_MENUITEM2);
-    wxAcceleratorTable accel(11,entries);
+    wxAcceleratorTable accel(12,entries);
     SetAcceleratorTable(accel);
 
 
@@ -292,6 +299,7 @@ void LGSFrame::Compute()
     MyFrame = this;
     ComputeButton->Disable();
     numberfield = Choice->GetSelection();
+    l_computation = lcomputation::LGS;
 
     std::thread t(lgsmain,std::ref(IOText),std::ref(numberfield),p);
     t.detach();
@@ -309,6 +317,35 @@ void LGSFrame::ComputeSimplex(wxCommandEvent &)
     std::thread t(simplex,std::ref(IOText));
     t.detach();
 }
+
+
+void LGSFrame::ComputeEvaluation(wxCommandEvent &)
+{
+    if (iscomputing) return;
+    val::MultiLineDialog dialog(this,"","Entry Expression",240,fontsize + 10,"Evaluate Matrix-Expression",fontsize,1);
+
+    if (dialog.ShowModal() == wxID_CANCEL) return;
+    std::string expression(dialog.GetValue());
+    int p=val::FromString<int>(std::string(TextCtrlmodq->GetValue()));
+
+    if (p<0) p*=-1;
+
+    if (!val::isprime(p)) p = val::nextprime(p);
+
+    TextCtrlmodq->SetValue(val::ToString(p));
+
+    iscomputing = 1;
+
+    IOText=I_TextCtrl->GetValue();
+    O_TextCtrl->Clear();
+    MyFrame = this;
+    ComputeButton->Disable();
+    l_computation = lcomputation::EVAL;
+    lexpression = expression;
+    std::thread t(evaluation, std::ref(IOText), expression, numberfield,p);
+    t.detach();
+}
+
 
 void LGSFrame::OnClearButtonClick(wxCommandEvent& event)
 {
@@ -331,7 +368,38 @@ void LGSFrame::OnMessageEvent(MyThreadEvent& event)
 
 void LGSFrame::OnChoiceSelect(wxCommandEvent& event)
 {
-    Compute();
+    numberfield = Choice->GetSelection();
+    switch (l_computation)
+    {
+        case lcomputation::UNDEF: break;
+        case lcomputation::LGS:
+        {
+            Compute();
+        } break;
+        case lcomputation::EVAL:
+        {
+            if (iscomputing) return;
+            int p = val::FromString<int>(std::string(TextCtrlmodq->GetValue()));
+
+            if (p < 0) p *= -1;
+
+            if (!val::isprime(p)) p = val::nextprime(p);
+
+            TextCtrlmodq->SetValue(val::ToString(p));
+
+            iscomputing = 1;
+
+            IOText = I_TextCtrl->GetValue();
+            O_TextCtrl->Clear();
+            MyFrame = this;
+            ComputeButton->Disable();
+            l_computation = lcomputation::EVAL;
+            std::thread t(evaluation, std::ref(IOText), lexpression, numberfield, p);
+            t.detach();
+        } break;
+        default: break;
+    }
+    //Compute();
 }
 
 void LGSFrame::OnMenuIncrease(wxCommandEvent& event)
@@ -367,5 +435,35 @@ void LGSFrame::OnNumberfieldChoice(wxCommandEvent &event)
     int id = event.GetId();
     id %= 1000;
     Choice->SetSelection(id-1);
-    Compute();
+    numberfield = Choice->GetSelection();
+    switch (l_computation)
+    {
+        case lcomputation::UNDEF: break;
+        case lcomputation::LGS:
+        {
+            Compute();
+        } break;
+        case lcomputation::EVAL:
+        {
+            if (iscomputing) return;
+            int p = val::FromString<int>(std::string(TextCtrlmodq->GetValue()));
+
+            if (p < 0) p *= -1;
+
+            if (!val::isprime(p)) p = val::nextprime(p);
+
+            TextCtrlmodq->SetValue(val::ToString(p));
+
+            iscomputing = 1;
+
+            IOText = I_TextCtrl->GetValue();
+            O_TextCtrl->Clear();
+            MyFrame = this;
+            ComputeButton->Disable();
+            l_computation = lcomputation::EVAL;
+            std::thread t(evaluation, std::ref(IOText), lexpression, numberfield, p);
+            t.detach();
+        } break;
+        default: break;
+    }
 }

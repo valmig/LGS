@@ -23,37 +23,8 @@
 #include "LGS.h"
 
 // =========================================================================================
-/*
-class MyThreadEvent;
-wxDECLARE_EVENT(MY_EVENT, MyThreadEvent);
 
-
-class MyThreadEvent: public wxThreadEvent
-{
-public:
-	MyThreadEvent(wxEventType commandType, int id = 0)
-        		:  wxThreadEvent(commandType, id) { }
-
-	// You *must* copy here the data to be transported
-	MyThreadEvent(const MyThreadEvent& event)
-        		:  wxThreadEvent(event) { this->SetMessage(event.GetMessage()); }
-
-	// Required for sending with wxPostEvent()
-	wxEvent* Clone() const { return new MyThreadEvent(*this); }
-
-	std::string GetMessage() const { return message; }
-	void SetMessage(const std::string &s) { message = s; }
-
-private:
-	std::string message;
-};
-
-enum {IdMessage};
-*/
-//=====================================================================================
-
-
-
+enum lcomputation{UNDEF, LGS, EVAL};
 
 
 class LGSFrame: public wxFrame
@@ -108,9 +79,10 @@ class LGSFrame: public wxFrame
         void OnNumberfieldChoice(wxCommandEvent &event);
         void Compute();
         void ComputeSimplex(wxCommandEvent&);
+        void ComputeEvaluation(wxCommandEvent&);
 
-        int xsize=-1,ysize=-1,xpos=-1,ypos=-1,fontsize=-1, iscomputing = 0, numberfield = 0;
-        std::string IOText;
+        int xsize=-1,ysize=-1,xpos=-1,ypos=-1,fontsize=-1, iscomputing = 0, numberfield = 0, l_computation = UNDEF;
+        std::string IOText, lexpression;
         void GetSizeSettings();
 
 

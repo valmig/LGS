@@ -6,7 +6,7 @@
 
 #ifdef _WIN32
 std::string filesep="\\",filedir=val::CurrentHomeDir(),settingsfile=val::CurrentHomeDir()+"\\AppData\\Local\\MVPrograms\\LGS\\settings.txt",
-            settingsdir = val::CurrentHomeDir()+"\\AppData\\Local\\MVPrograms\\LGS",valdir = val::CurrentHomeDir()+"\\AppData\\Local\\LGS",
+            settingsdir = val::CurrentHomeDir()+"\\AppData\\Local\\MVPrograms\\LGS",valdir = val::CurrentHomeDir()+"\\AppData\\Local\\MVPrograms",
             iconpath="C:\\gccprogrammes\\LA\\LGS\\icon\\LGS.xpm",
             alticonpath = val::GetExeDir() + "\\LGS.xpm";
 #endif // _WIN32
@@ -97,6 +97,33 @@ namespace val
 } // end namespace val
 
 
+val::Glist<std::string> getmatstrings(const std::string &s)
+{
+    val::Glist<std::string> values;
+    int i = 0 ,n = s.length();
+    if (n==0) return values;
+    std::string sm="";
+
+    while (i < n  && s[i] == '\n') ++i;
+
+    while (i < n) {
+        if (i > 0 && s[i] == '\n' && s[i-1] == '\n') {
+            values.push_back(std::move(sm));
+            while (i < n && s[i] == '\n') ++i;
+        }
+        else {
+            sm += s[i];
+            ++i;
+        }
+    }
+
+    if (sm != "") values.push_back(std::move(sm));
+
+    return values;
+}
+
+
+
 int has_variable(const std::string &s)
 {
     int n = s.length();
@@ -151,211 +178,10 @@ void makeprimitiv(val::matrix<val::gauss_number> &A)
 
 
 
-
-/*
-std::string rationalfunctionTostring(const val::rationalfunction &value)
-{
-    using namespace val;
-    std::string s;
-
-    if (value.nominator().degree() <= 0 && value.denominator().degree() == 0) {
-        return ToString(value.nominator().LC()/value.denominator().LC());
-    }
-
-    rational cont, c1;
-    pol<integer> nom, denom;
-
-    primitivpart(value.nominator(),nom,cont);
-    primitivpart(value.denominator(),denom,c1);
-
-    cont /= c1;
-    if (denom.LC().signum() == -1) {
-        nom *= integer(-1);
-        denom *= integer(-1);
-    }
-    if (nom.LC().signum() == -1) {
-        nom *= integer(-1);
-        cont.changesign();
-    }
-
-    if (cont.signum() == -1 || cont.denominator() != integer(1)) {
-        if (cont == rational(-1)) s += "-";
-        else {
-            s += "(" + ToString(cont) + ")*";
-        }
-    }
-    else if (cont != rational(1)) s += ToString(cont);
-    if (nom.length()>1) {
-        s += "(" + val::PolToString(nom) + ")";
-    }
-    else s += val::PolToString(nom);
-    if (denom.degree()>0) s += "/";
-    if (denom.length()>1) {
-        s += "(" + val::PolToString(denom) + ")";
-    }
-
-    return s;
-}
-
-
-
-template <>
-std::string numbertostring(const val::modq& wert)
-{
-    return val::ToString(int(wert));
-}
-
-template <>
-std::string numbertostring(const val::rationalfunction& wert)
-{
-    return rationalfunctionTostring(wert);
-}
-
-
-template <class T>
-std::string numbertostring(const T& wert)
-{
-    return val::ToString(wert);
-}
-
-
-template <>
-val::integer stringtonumber(const std::string& s)
-{
-    return val::FromString<val::integer>(s);
-}
-
-template <>
-val::rational stringtonumber(const std::string& s)
-{
-    return val::FromString<val::rational>(s);//val::string_to_rational(s);
-}
-
-template <>
-double stringtonumber(const std::string& s)
-{
-    return double( val::FromString<val::rational>(s) ); //double(val::string_to_rational(s));
-}
-
-template<>
-val::complex stringtonumber(const std::string& s)
-{
-    return val::FromString<val::complex>(s);
-}
-
-template<>
-val::modq stringtonumber(const std::string& s)
-{
-    std::stringstream ss;
-    val::modq x;
-
-    ss.str(s);
-    ss>>x;
-    return x;
-}
-
-template<>
-int stringtonumber(const std::string& s)
-{
-    std::stringstream ss;
-    int x;
-
-    ss.str(s);
-    ss>>x;
-    return x;
-}
-
-template<>
-val::gauss_number stringtonumber(const std::string& s)
-{
-    return val::FromString<val::gauss_number>(s);
-}
-
-template<>
-val::rationalfunction stringtonumber(const std::string& s)
-{
-    val::valfunction f(s);
-    return f.getrationalfunction();
-}
-*/
-
-
-
-
-/*
-template <class T>
-void SetLGS(std::string &s,val::matrix<T> &A)
-{
-    int l=s.length(),first=0,i,j,k,nzeichen=0,m,n;
-    std::string zeichen="";
-
-    for (i=0;i<l;i++)
-        if (s[i]!='\n' && s[i]!=' ' ) break;
-    first=i;
-    m=n=0;
-    //Bestimme Spaltenzahl n
-    for (;i<l;) {
-        if (i<l && s[i]=='\n') {break;}
-        while (i<l && (s[i]!=' ' && s[i] != '\n' )) i++;
-        n++;
-        while (i<l && s[i]==' ') i++;
-    }
-    //Bestimme Spaltenzahl m
-    if (n<=1) {m=0;return;}
-    for (i=first;i<l;) {
-        if (s[i]!=' ' && s[i]!='\n') {
-            while (i<l && s[i]!=' ' && s[i]!='\n') i++;
-            nzeichen++;
-        }
-        while (i<l && (s[i]==' ' || s[i] =='\n')) i++;
-    }
-    m=nzeichen/n;
-    if (nzeichen%n!=0) m++;
-
-    A=val::matrix<T>(m,n);
-    A.make_zero();
-
-    i=j=0;
-    for (k=first;k<l;) {
-        if (s[k]!=' ' && s[k]!='\n') {
-            while (k<l && s[k]!=' ' && s[k]!='\n') {
-                zeichen+=s[k];
-                k++;
-            }
-            //A(i,j)=val::string_to_rational(zeichen);
-            A(i,j)=stringtonumber<T>(zeichen);
-            zeichen="";
-            j++;
-            if (j>=n) {j=0;i++;}
-        }
-        while (k<l && (s[k]==' ' || s[k] =='\n')) {
-               k++;
-        }
-    }
-}
-
-*/
-
-
-
 void lgsmain(std::string& s,int &numberfield,int p)
 {
     val::modq::q=p;
     int n,r,i,j;
-    //val::rational detrat;
-    //val::modq detmodq;
-    //val::complex detcom;
-    //val::gauss_number detgauss;
-    //val::rationalfunction detratfunc;
-    //double detdoub;
-    //val::rational **a=NULL, **X=NULL,det;
-    //val::matrix<val::modq> Amodq,Xmodq;
-    //val::matrix<val::integer> Aint,Xint;
-    //val::matrix<val::rational> Arat,Xrat;
-    //val::matrix<val::complex> Acom,Xcom;
-    //val::matrix<double> Adoub,Xdoub;
-    //val::matrix<val::gauss_number> Agauss,Xgauss;
-    //val::matrix<val::rationalfunction> Aratfunc, Xratfunc;
 
     MyThreadEvent event(MY_EVENT,IdMessage);
 
@@ -706,6 +532,65 @@ void simplex(std::string &s)
         s += "\n A after " + ToString(nel) + ". elimination:\n" + ToString(A) +"\n";
     }
     while (pfound);
+
+    event.SetMessage(s);
+    MyFrame->GetEventHandler()->QueueEvent(event.Clone() );
+}
+
+
+void evaluation(std::string &s, std::string expression, int numberfield, int p)
+{
+    val::valfunction f(expression);
+    MyThreadEvent event(MY_EVENT,IdMessage);
+    val::Glist<std::string> values = getmatstrings(s);
+
+    /*
+    s = "Expression: " + f.getinfixnotation();
+    s += "\nAnzahl Matrizen: " + val::ToString(values.length()) + "\n";
+    for (const auto & v: values) {
+        s += v + "\n";
+    }
+    */
+
+    switch (numberfield) {
+        case RATIONAL: case INTEGER: case GAUSSNUMBER:
+        {
+            val::Glist<val::matrix<val::gauss_number>> A;
+            val::n_polynom<val::gauss_number> P = f.getn_polynom<val::gauss_number>();
+
+            for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::gauss_number>>(v));
+            s = "Result of expression: " + f.getinfixnotation() + "\n";
+            evaluate_expression(P, A, s);
+        } break;
+        case DOUBLE: case COMPLEX:
+        {
+            val::Glist<val::matrix<val::complex>> A;
+            val::n_polynom<val::complex> P = f.getn_polynom<val::complex>();
+            for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::complex>>(v));
+            s = "Result of expression: " + f.getinfixnotation() + "\n";
+            evaluate_expression(P, A, s);
+        } break;
+        case MODQ:
+        {
+            val::modq::q = p;
+            val::Glist<val::matrix<val::modq>> A;
+            val::n_polynom<val::modq> P = f.getn_polynom<val::modq>();
+
+            for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::modq>>(v));
+            s = "Result of expression: " + f.getinfixnotation() + "\n";
+            evaluate_expression(P, A, s);
+        } break;
+        /*
+        case RFUNCTION:
+        {
+            val::Glist<val::matrix<val::rationalfunction>> A;
+            val::n_polynom<val::rationalfunction> P = f.getn_polynom<val::rationalfunction>();
+            for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::rationalfunction>>(v));
+            evaluate_expression(P, A, s);
+        } break;
+        */
+        default: break;
+    }
 
     event.SetMessage(s);
     MyFrame->GetEventHandler()->QueueEvent(event.Clone() );

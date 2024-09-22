@@ -14,6 +14,7 @@
 #include <string>
 #include <pol.h>
 #include <val_filesys.h>
+#include <n_polynom.h>
 
 extern std::string filesep,settingsfile,settingsdir,valdir,iconpath, alticonpath;
 //extern wxTextCtrl *MyOutput;
@@ -45,15 +46,7 @@ private:
 
 enum {IdMessage};
 
-
-/*
-template <class T>
-std::string numbertostring(const T&);
-
-
-template <class T>
-T stringtonumber(const std::string& s);
-*/
+enum field_type{RATIONAL, MODQ, DOUBLE, COMPLEX, INTEGER, GAUSSNUMBER, RFUNCTION};
 
 template <class T>
 std::string ToString(const val::matrix<T>& A);
@@ -67,6 +60,7 @@ void lgsmain(std::string& s,int &numberfield,int p);
 
 void simplex(std::string& s);
 
+void evaluation(std::string &s,std::string expression ,int numberfield, int p);
 
 template <class T>
 std::string ToString(const val::matrix<T>& A)
@@ -106,32 +100,91 @@ std::string ToString(const val::matrix<T>& A)
 }
 
 
-
-/*
-template <class T>//,typename std::enable_if_t<std::is_arithmetic<T>::value || val::is_nongeneric_ring<T>::value,int> = 0>
-std::string PolToString(const val::pol<T> &f)
+template <class T>
+int sum_matrix(const val::matrix<T>& A, const val::matrix<T> &B, val::matrix<T> &result)
 {
-    int i;
-    val::polIterator<T> it;
-    std::string s="";
-    T one=val::unity_element<T>(),minusone=-one,zero=val::zero_element<T>();
-
-    for (i=0,it=f;it;it++,++i) {
-        if (i!=0 && it.actualcoef()>zero) s+='+';
-        if (it.actualcoef()==minusone) {
-            s+='-';
-            if (it.actualdegree()==0) s+='1';
-        }
-        else if (it.actualcoef()!=one) s+=val::ToString(it.actualcoef());
-        if (it.actualdegree()) {
-            if (it.actualcoef()!=one && it.actualcoef()!=minusone) s+='*';
-            s+='x';
-            if (it.actualdegree()!=1) s+="^" + val::ToString(it.actualdegree());
-        }
-    }
-    return s;
+    if (A.numberofrows() != B.numberofrows() || A.numberofcolumns() != B.numberofcolumns()) return 0;
+    result = A + B;
+    return 1;
 }
-*/
+
+template <class T>
+int prod_matrix(const val::matrix<T> &A, const val::matrix<T> &B, val::matrix<T> &result)
+{
+    if (A.numberofcolumns() != B.numberofrows()) return 0;
+    result = A * B;
+    return 1;
+}
+
+template <class T>
+val::matrix<T> power_matrix(const val::matrix<T> &a, int n)
+{
+    val::matrix<T> result, y;
+
+    result = val::matrix<T>(a.numberofrows());
+    result.make_identity();
+
+    if (a.iszero()) return  a;
+    if (n==0) return result;
+    //if (z>0) y=a;
+    //else y=1.0/a;
+    y = a;
+
+    while (n!=0) {
+       if (n%2!=0) {
+           result *= y;
+       }
+       y *= y;
+       n = n/2;
+    }
+    return result;
+}
+
+template <class T>
+int evaluate_expression(const val::n_polynom<T> &p, const val::Glist<val::matrix<T>> &A, std::string &s)
+{
+    int n = val::Min(A.length(),p.getdim()), k = 0;
+    val::matrix<T> result, h, h1;
+
+    /*
+    for (const auto &a : A) {
+        std::cout << std::endl << ToString(a);
+    }
+    */
+
+    for (const auto & m : p) {
+        for (int i = 0; i < n; ++i) {
+            if (m.actualterm()[i] != 0) {
+                if (m.actualterm()[i] == 1) h1 = A[i];
+                else if (A[i].numberofrows() != A[i].numberofcolumns()) {
+                    s += "\nFehler Potenz: Matrix ist nicht quadratisch!";
+                    return 0;
+                }
+                else h1 = power_matrix(A[i], m.actualterm()[i]);
+            }
+            if (i != 0) {
+                if (h.numberofcolumns() != h1.numberofrows()) {
+                     s += "\nFehler Multiplikation: Dimension der Matrizen nicht zulässig!";
+                    return 0;
+                }
+                else h *= h1;
+            }
+            else h = h1;
+        }
+        h *= m.actualcoef();
+        if (k != 0) {
+            if (result.numberofrows() != h.numberofrows() || result.numberofcolumns() != h.numberofcolumns()) {
+                s += "\nFehler Addition: Dimension der Matrizen ist nicht zulässig!";
+                return 0;
+            }
+            else result += h;
+        }
+        else result = h;
+        ++k;
+    }
+    s += "\n" + ToString(result);
+    return 1;
+}
 
 
 
