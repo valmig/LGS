@@ -84,9 +84,6 @@ class LGSFrame: public wxFrame
         int xsize=-1,ysize=-1,xpos=-1,ypos=-1,fontsize=-1, iscomputing = 0, numberfield = 0, l_computation = UNDEF;
         std::string IOText, lexpression;
         void GetSizeSettings();
-
-
-        DECLARE_EVENT_TABLE()
 };
 
 #endif // LGSMAIN_H

@@ -26,7 +26,7 @@
 
 
 
-
+/*
 //helper functions
 enum wxbuildinfoformat {
     short_f, long_f };
@@ -52,8 +52,9 @@ wxString wxbuildinfo(wxbuildinfoformat format)
 
     return wxbuild;
 }
+*/
 
-//(*IdInit(LGSFrame)
+//(*Idinit(LGSFrame)
 const long LGSFrame::ID_BUTTON1 = wxNewId();
 const long LGSFrame::ID_BUTTON2 = wxNewId();
 const long LGSFrame::ID_CHOICE1 = wxNewId();
@@ -68,10 +69,6 @@ const long LGSFrame::idMenuAbout = wxNewId();
 const long LGSFrame::ID_STATUSBAR1 = wxNewId();
 //*)
 
-BEGIN_EVENT_TABLE(LGSFrame,wxFrame)
-    //(*EventTable(LGSFrame)
-    //*)
-END_EVENT_TABLE()
 
 // ==================================================
 wxDEFINE_EVENT(MY_EVENT, MyThreadEvent);
@@ -93,16 +90,16 @@ LGSFrame::LGSFrame(wxWindow* parent,wxWindowID id)
 
     Create(parent, id, _("LGS"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("id"));
     {
-    	if (val::FileExists(iconpath)) {
+        if (val::FileExists(iconpath)) {
             wxIcon FrameIcon;
             FrameIcon.CopyFromBitmap(wxBitmap(wxImage(iconpath)));
             SetIcon(FrameIcon);
-    	}
-    	else if (val::FileExists(alticonpath)) {
+        }
+        else if (val::FileExists(alticonpath)) {
             wxIcon FrameIcon;
             FrameIcon.CopyFromBitmap(wxBitmap(wxImage(alticonpath)));
             SetIcon(FrameIcon);
-    	}
+        }
     }
     BoxSizer1 = new wxBoxSizer(wxVERTICAL);
     BoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
@@ -162,6 +159,7 @@ LGSFrame::LGSFrame(wxWindow* parent,wxWindowID id)
     BoxSizer1->SetSizeHints(this);
     Center();
 
+    /*
     Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&LGSFrame::OnComputeButtonClick);
     Connect(ID_BUTTON2,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&LGSFrame::OnClearButtonClick);
     Connect(ID_CHOICE1,wxEVT_COMMAND_CHOICE_SELECTED,(wxObjectEventFunction)&LGSFrame::OnChoiceSelect);
@@ -169,6 +167,15 @@ LGSFrame::LGSFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_MENUITEM1,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&LGSFrame::OnMenuIncrease);
     Connect(ID_MENUITEM2,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&LGSFrame::OnMenuDecrease);
     Connect(idMenuAbout,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&LGSFrame::OnAbout);
+    */
+
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED,&LGSFrame::OnComputeButtonClick,this,ID_BUTTON1);
+    Bind(wxEVT_COMMAND_BUTTON_CLICKED,&LGSFrame::OnClearButtonClick, this, ID_BUTTON2);
+    Bind(wxEVT_COMMAND_CHOICE_SELECTED,&LGSFrame::OnChoiceSelect, this, ID_CHOICE1);
+    Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnQuit, this, idMenuQuit);
+    Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnMenuIncrease, this, ID_MENUITEM1);
+    Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnMenuDecrease, this, ID_MENUITEM2);
+    Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnAbout, this, idMenuAbout);
     //*)
 
     Bind(wxEVT_COMMAND_MENU_SELECTED,&LGSFrame::OnNumberfieldChoice,this,1001);

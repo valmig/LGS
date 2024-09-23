@@ -143,7 +143,7 @@ val::matrix<T> power_matrix(const val::matrix<T> &a, int n)
 template <class T>
 int evaluate_expression(const val::n_polynom<T> &p, const val::Glist<val::matrix<T>> &A, std::string &s)
 {
-    int n = val::Min(A.length(),p.getdim()), k = 0;
+    int n = val::Min(A.length(),p.getdim()), k = 0, hset = 0;
     val::matrix<T> result, h, h1;
 
     /*
@@ -152,7 +152,9 @@ int evaluate_expression(const val::n_polynom<T> &p, const val::Glist<val::matrix
     }
     */
 
+
     for (const auto & m : p) {
+        hset = 0;
         for (int i = 0; i < n; ++i) {
             if (m.actualterm()[i] != 0) {
                 if (m.actualterm()[i] == 1) h1 = A[i];
@@ -161,28 +163,32 @@ int evaluate_expression(const val::n_polynom<T> &p, const val::Glist<val::matrix
                     return 0;
                 }
                 else h1 = power_matrix(A[i], m.actualterm()[i]);
-            }
-            if (i != 0) {
-                if (h.numberofcolumns() != h1.numberofrows()) {
-                     s += "\nFehler Multiplikation: Dimension der Matrizen nicht zulässig!";
+                if (!hset) {
+                    h = std::move(h1);
+                    hset = 1;
+                }
+                else if (h.numberofcolumns() != h1.numberofrows()) {
+                     s += "\nFehler Multiplikation: Dimension der Matrizen nicht passend!";
                     return 0;
                 }
                 else h *= h1;
             }
-            else h = h1;
         }
         h *= m.actualcoef();
+        //s += "\nZwischen:\n" + ToString(h);
         if (k != 0) {
             if (result.numberofrows() != h.numberofrows() || result.numberofcolumns() != h.numberofcolumns()) {
-                s += "\nFehler Addition: Dimension der Matrizen ist nicht zulässig!";
+                s += "\nFehler Addition: Dimension der Matrizen ist nicht passend!";
                 return 0;
             }
             else result += h;
+            h = val::matrix<T>();
         }
-        else result = h;
+        else result = std::move(h);
+        //s +="\nZwischen:\n" + ToString(result);
         ++k;
     }
-    s += "\n" + ToString(result);
+    s += ToString(result);
     return 1;
 }
 

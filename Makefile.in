@@ -8,7 +8,6 @@ BIN = bin
 
 objects = LGSApp.o LGSMain.o LGS.o 
 
-  
 OBJECTS = $(addprefix $(OBJ)/, $(objects))
 
 
@@ -27,7 +26,6 @@ $(OBJ)/%.o: $(DIRPATH)/src/%.cpp $(DIRPATH)/src/%.h
 
 clean:
 	rm -r -f $(OBJ) $(BIN)
-	
 
 .PHONY install:
 
