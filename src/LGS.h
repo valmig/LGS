@@ -16,7 +16,7 @@
 #include <val_filesys.h>
 #include <n_polynom.h>
 
-extern std::string filesep,settingsfile,settingsdir,valdir,iconpath, alticonpath;
+extern std::string filesep,settingsfile,settingsdir,valdir,iconpath, alticonpath, ansmatrix;
 //extern wxTextCtrl *MyOutput;
 //extern wxButton *MyButton;
 extern wxFrame* MyFrame;
@@ -27,21 +27,20 @@ wxDECLARE_EVENT(MY_EVENT, MyThreadEvent);
 class MyThreadEvent: public wxThreadEvent
 {
 public:
-	MyThreadEvent(wxEventType commandType, int id = 0)
+        MyThreadEvent(wxEventType commandType, int id = 0)
         		:  wxThreadEvent(commandType, id) { }
 
-	// You *must* copy here the data to be transported
-	MyThreadEvent(const MyThreadEvent& event)
-        :  wxThreadEvent(event), message(event.message) {} //{ this->SetMessage(event.GetMessage()); }
+        // You *must* copy here the data to be transported
+        MyThreadEvent(const MyThreadEvent& event)
+            :  wxThreadEvent(event), message(event.message) {} //{ this->SetMessage(event.GetMessage()); }
 
-	// Required for sending with wxPostEvent()
-	wxEvent* Clone() const { return new MyThreadEvent(*this); }
+        // Required for sending with wxPostEvent()
+        wxEvent* Clone() const { return new MyThreadEvent(*this); }
 
-	std::string GetMessage() const { return message; }
-	void SetMessage(const std::string &s) { message = s; }
-
+        std::string GetMessage() const { return message; }
+        void SetMessage(const std::string &s) { message = s; }
 private:
-	std::string message;
+        std::string message;
 };
 
 enum {IdMessage};
@@ -188,7 +187,7 @@ int evaluate_expression(const val::n_polynom<T> &p, const val::Glist<val::matrix
         //s +="\nZwischen:\n" + ToString(result);
         ++k;
     }
-    s += ToString(result);
+    s += (ansmatrix = ToString(result));
     return 1;
 }
 

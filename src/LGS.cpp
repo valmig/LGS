@@ -3,6 +3,7 @@
 #include <pol_arithmetic.h>
 #include <LA.h>
 #include <valfunction.h>
+#include <val_utils.h>
 
 #ifdef _WIN32
 std::string filesep="\\",filedir=val::CurrentHomeDir(),settingsfile=val::CurrentHomeDir()+"\\AppData\\Local\\MVPrograms\\LGS\\settings.txt",
@@ -23,7 +24,7 @@ std::string filesep="/", valdir = val::CurrentHomeDir() + "/Library/Application 
             alticonpath = val::GetExeDir() + "/../Resources/LGS.xpm";
 #endif // __APPLE__
 
-
+std::string ansmatrix = "";
 
 //wxTextCtrl *MyOutput=NULL;
 //wxButton *MyButton=NULL;
@@ -540,9 +541,21 @@ void simplex(std::string &s)
 
 void evaluation(std::string &s, std::string expression, int numberfield, int p)
 {
-    val::valfunction f(expression);
     MyThreadEvent event(MY_EVENT,IdMessage);
     val::Glist<std::string> values = getmatstrings(s);
+
+    if (expression.find("ans") != std::string::npos) {
+        val::replace<char>(expression, "ans", "t");
+        val::valfunction f(expression);
+        int n = f.numberofvariables();
+        if (f.isconst()) n = 0;
+        std::string x_s = "x" + val::ToString(n+1);
+        val::replace<char>(expression, "t", x_s);
+        values.push_back(ansmatrix);
+    }
+    val::valfunction f(expression);
+
+
 
     /*
     s = "Expression: " + f.getinfixnotation();
