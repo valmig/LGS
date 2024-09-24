@@ -549,6 +549,7 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
         val::valfunction f(expression);
         int n = f.numberofvariables();
         if (f.isconst()) n = 0;
+        n = val::Max(n,values.length());
         std::string x_s = "x" + val::ToString(n+1);
         val::replace<char>(expression, "t", x_s);
         values.push_back(ansmatrix);
