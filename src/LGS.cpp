@@ -136,6 +136,43 @@ int has_variable(const std::string &s)
     return 0;
 }
 
+int substitutepar(std::string &s)
+{
+    int j = 1, n, i, found =0;
+    std::string rw, rs;
+    val::Glist<char> VarList;
+
+
+    rw = "#";
+
+    if (val::replace<char>(s, "ans", rw)) found = 1;
+
+    n = s.length();
+    for (i = 0; i < n; ++i) {
+        if ((s[i] >= 65 && s[i] <= 90) || (s[i] >= 97 && s[i] <= 122 && s[i] != 'i' && s[i] != 'e')) {
+            if (!val::isinContainer(s[i], VarList)) VarList.sinsert(s[i]);
+        }
+    }
+
+    for (const auto &v : VarList) {
+        rw = "A" + val::ToString(j);
+        rs = v;
+        ++j;
+        val::replace(s, rs, rw);
+        n = s.length();
+    }
+
+    //std::cout << "\n s = " << s;
+    val::replace(s, std::string("A"), std::string("x"));
+
+    i = VarList.length() + 1;
+    rw = "#";
+    rs = "x" + val::ToString(i);
+    val::replace<char>(s, rw, rs);
+
+    // std::cout << "\n s = " << s;
+    return found;
+}
 
 void makeprimitiv(val::matrix<val::rational> &A)
 {
@@ -543,7 +580,9 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
 {
     MyThreadEvent event(MY_EVENT,IdMessage);
     val::Glist<std::string> values = getmatstrings(s);
+    std::string oexpr = expression;
 
+    /*
     if (expression.find("ans") != std::string::npos) {
         val::replace<char>(expression, "ans", "t");
         val::valfunction f(expression);
@@ -554,7 +593,10 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
         val::replace<char>(expression, "t", x_s);
         values.push_back(ansmatrix);
     }
-    val::valfunction f(expression);
+    */
+    if (substitutepar(expression)) values.push_back(ansmatrix);
+
+    val::valfunction f(expression, 0);
 
 
 
@@ -573,7 +615,7 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
             val::n_polynom<val::gauss_number> P = f.getn_polynom<val::gauss_number>();
 
             for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::gauss_number>>(v));
-            s = "Result of expression: " + f.getinfixnotation() + "\n";
+            s = "Result of expression: " + oexpr + "\n";
             evaluate_expression(P, A, s);
         } break;
         case DOUBLE: case COMPLEX:
@@ -581,7 +623,7 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
             val::Glist<val::matrix<val::complex>> A;
             val::n_polynom<val::complex> P = f.getn_polynom<val::complex>();
             for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::complex>>(v));
-            s = "Result of expression: " + f.getinfixnotation() + "\n";
+            s = "Result of expression: " + oexpr + "\n";
             evaluate_expression(P, A, s);
         } break;
         case MODQ:
@@ -591,7 +633,7 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
             val::n_polynom<val::modq> P = f.getn_polynom<val::modq>();
 
             for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::modq>>(v));
-            s = "Result of expression: " + f.getinfixnotation() + "\n";
+            s = "Result of expression: " + oexpr + "\n";
             evaluate_expression(P, A, s);
         } break;
         /*
