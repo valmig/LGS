@@ -6,7 +6,7 @@
 #include <modq.h>
 #include <rational.h>
 #include <complex.h>
-#include <matrix.h>
+#include <LA.h>
 #include <val_utils.h>
 #include <numbers.h>
 #include <wx/textctrl.h>
@@ -15,6 +15,14 @@
 #include <pol.h>
 #include <val_filesys.h>
 #include <n_polynom.h>
+#include <valfunction.h>
+
+/*
+namespace val
+{
+    double abs(modq a);
+}
+*/
 
 extern std::string filesep,settingsfile,settingsdir,valdir,iconpath, alticonpath, ansmatrix;
 //extern wxTextCtrl *MyOutput;
@@ -54,6 +62,9 @@ template <class T>
 void SetLGS(std::string &s,val::matrix<T> &A);
 
 int has_variable(const std::string &s);
+
+
+int is_variable(const std::string &s);
 
 void lgsmain(std::string& s,int &numberfield,int p);
 
@@ -115,6 +126,70 @@ int prod_matrix(const val::matrix<T> &A, const val::matrix<T> &B, val::matrix<T>
     return 1;
 }
 
+
+template <class T>
+int invertmatrix(val::matrix<T> & A, const double& epsilon = 0.0)
+{
+    int n = A.numberofrows(), r;
+    if (A.iszero()) return  0;
+    if (A.numberofcolumns() != n) return 0;
+
+    T zero(val::zero_element<T>()), one(val::unity_element<T>()), det;
+    val::matrix<T> M(n,2*n);
+    val::vector<int> q;
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            M(i,j) = A(i,j);
+        }
+        M(i,n+i) = one;
+    }
+
+    if (epsilon == 0.0) r = val::gauss(M, q, det);
+    else r = val::gauss_double(M, q, det, epsilon);
+
+    if (r < n) return 0;
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) A(i,j) = M(i,j+n);
+    }
+
+    return 1;
+}
+
+template <class T>
+int matrixpower(val::matrix<T> &a, int n, const double &epsilon = 0.0)
+{
+    if (a.iszero()) {
+        if (n >= 0) return 1;
+        else return 0;;
+    }
+    if (a.numberofcolumns() != a.numberofrows()) return 0;
+
+    if (n < 0) {
+        if (!invertmatrix(a, epsilon)) return 0;
+        n *= -1;
+    }
+
+    val::matrix<T> y = std::move(a);
+
+    a = val::matrix<T>(y.numberofcolumns());
+    a.make_identity();
+    if (n==0) return  1;
+
+    while (n!=0) {
+       if (n%2!=0) {
+           a *= y;
+       }
+       y *= y;
+       n = n/2;
+    }
+    return 1;
+}
+
+
+
+
 template <class T>
 val::matrix<T> power_matrix(const val::matrix<T> &a, int n)
 {
@@ -138,6 +213,58 @@ val::matrix<T> power_matrix(const val::matrix<T> &a, int n)
     }
     return result;
 }
+
+template <class T>
+int evaluate_expression(const val::valfunction &F, val::matrix<T> &A, const val::Glist<val::matrix<T>> &G, const double &epsilon = 0.0)
+{
+    if (F.is_zero()) return 1;
+    int n = is_variable(F.getinfixnotation()), res = 0;
+    T minusone = -val::unity_element<T>();
+
+    if (n) {
+        A = G[n-1];
+        return 1;
+    }
+
+    std::string op = F.getfirstoperator();
+    val::valfunction f = F.getfirstargument(), g;
+
+    if (op == "m") {
+        res = evaluate_expression(f,A,G,epsilon);
+        if (res) A *= minusone;
+        return res;
+    }
+    else if (op == "+" || op == "-" || op == "*") {
+        res = evaluate_expression(f,A,G,epsilon);
+        if (!res) return 0;
+
+        val::matrix<T> B;
+        g = F.getsecondargument();
+        res = evaluate_expression(g,B,G,epsilon);
+        if (!res) return 0;
+        if ((op == "+" || op == "-") && (A.numberofrows() != B.numberofrows() || A.numberofcolumns() != B.numberofcolumns())) return  0;
+        if (op == "*" && A.numberofcolumns() != B.numberofrows()) return 0;
+        if (op == "+") A += B;
+        else if (op == "-") A -= B;
+        else A *= B;
+        return 1;
+    }
+    else if (op == "^") {
+        g = F.getsecondargument();
+        if (!val::isinteger(g.getinfixnotation())) return 0;
+
+        if (!evaluate_expression(f,A,G,epsilon)) return 0;
+
+        int exp = val::FromString<int>(g.getinfixnotation());
+
+        res = matrixpower(A, exp, epsilon);
+        return res;
+    }
+
+    return 0;
+}
+
+
 
 template <class T>
 int evaluate_expression(const val::n_polynom<T> &p, const val::Glist<val::matrix<T>> &A, std::string &s)

@@ -34,6 +34,10 @@ wxFrame* MyFrame = nullptr;
 
 namespace val
 {
+    double abs(modq a) {
+        return double(int(a));
+    }
+
     std::istream& operator >>(std::istream& is,valfunction &f)
     {
         std::string s;
@@ -135,6 +139,23 @@ int has_variable(const std::string &s)
 
     return 0;
 }
+
+
+int is_variable(const std::string &s)
+{
+    int n = s.length();
+    if (!n) return  0;
+    if (s == "x") return 1;
+    else if (s == "y") return 2;
+    else if (s == "z") return 3;
+
+    if (s[0] != 'x') return 0;
+    std::string t = val::tailofstring(s, n-1);
+    if (!val::isinteger(t)) return 0;
+    else return val::FromString<int>(t);
+}
+
+
 
 int substitutepar(std::string &s)
 {
@@ -616,7 +637,13 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
 
             for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::gauss_number>>(v));
             s = "Result of expression: " + oexpr + "\n";
-            evaluate_expression(P, A, s);
+            //evaluate_expression(P, A, s);
+            val::matrix<val::gauss_number> result;
+            if (evaluate_expression(f,result,A)) {
+                s += (ansmatrix = ToString(result));
+            }
+            else s += "Invalid operations!";
+
         } break;
         case DOUBLE: case COMPLEX:
         {
@@ -624,7 +651,12 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
             val::n_polynom<val::complex> P = f.getn_polynom<val::complex>();
             for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::complex>>(v));
             s = "Result of expression: " + oexpr + "\n";
-            evaluate_expression(P, A, s);
+            //evaluate_expression(P, A, s);
+            val::matrix<val::complex> result;
+            if (evaluate_expression(f,result,A,1e-9)) {
+                s += (ansmatrix = ToString(result));
+            }
+            else s += "Invalid operations!";
         } break;
         case MODQ:
         {
@@ -634,7 +666,12 @@ void evaluation(std::string &s, std::string expression, int numberfield, int p)
 
             for (const auto &v : values) A.push_back(val::FromString<val::matrix<val::modq>>(v));
             s = "Result of expression: " + oexpr + "\n";
-            evaluate_expression(P, A, s);
+            //evaluate_expression(P, A, s);
+            val::matrix<val::modq> result;
+            if (evaluate_expression(f,result,A)) {
+                s += (ansmatrix = ToString(result));
+            }
+            else s += "Invalid operations!";
         } break;
         /*
         case RFUNCTION:
