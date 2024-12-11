@@ -219,7 +219,7 @@ int evaluate_expression(const val::valfunction &F, val::matrix<T> &A, const val:
 {
     if (F.is_zero()) return 1;
     int n = is_variable(F.getinfixnotation()), res = 0;
-    T minusone = -val::unity_element<T>();
+    T minusone = -val::unity_element<T>(), zero = val::zero_element<T>();
 
     if (n) {
         A = G[n-1];
@@ -235,18 +235,33 @@ int evaluate_expression(const val::valfunction &F, val::matrix<T> &A, const val:
         return res;
     }
     else if (op == "+" || op == "-" || op == "*") {
-        res = evaluate_expression(f,A,G,epsilon);
-        if (!res) return 0;
+        int smult = 0;
+        T r;
+        if (op == "*" && f.isconst()) {
+            smult = 1;
+            r = f.rationaleval(zero);
+        }
+        else  {
+            res = evaluate_expression(f,A,G,epsilon);
+            if (!res) return 0;
+        }
 
         val::matrix<T> B;
         g = F.getsecondargument();
         res = evaluate_expression(g,B,G,epsilon);
         if (!res) return 0;
         if ((op == "+" || op == "-") && (A.numberofrows() != B.numberofrows() || A.numberofcolumns() != B.numberofcolumns())) return  0;
-        if (op == "*" && A.numberofcolumns() != B.numberofrows()) return 0;
+        if (op == "*") {
+            if (smult) {
+                A = r * B;
+                return 1;
+            }
+            else if (A.numberofcolumns() != B.numberofrows()) return 0;
+            A *= B;
+            return 1;
+        }
         if (op == "+") A += B;
         else if (op == "-") A -= B;
-        else A *= B;
         return 1;
     }
     else if (op == "^") {
