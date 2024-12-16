@@ -265,12 +265,22 @@ int evaluate_expression(const val::valfunction &F, val::matrix<T> &A, const val:
         return 1;
     }
     else if (op == "^") {
-        g = F.getsecondargument();
-        if (!val::isinteger(g.getinfixnotation())) return 0;
+        std::string sg = F.getsecondargument().getinfixnotation();
+        if (!val::isinteger(sg) && sg != "t") return 0;
 
         if (!evaluate_expression(f,A,G,epsilon)) return 0;
 
-        int exp = val::FromString<int>(g.getinfixnotation());
+        if (sg == "t") {
+            int m = A.numberofrows(), n = A.numberofcolumns();
+            val::matrix<T> B(n, m);
+            for (int i = 0; i < m; ++i) {
+                for (int j = 0; j < n; ++j) B(j,i) = std::move(A(i,j));
+            }
+            A = std::move(B);
+            return 1;
+        }
+
+        int exp = val::FromString<int>(sg);
 
         res = matrixpower(A, exp, epsilon);
         return res;
